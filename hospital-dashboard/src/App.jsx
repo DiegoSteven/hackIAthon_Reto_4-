@@ -15,8 +15,7 @@ function App() {
   const [patientId, setPatientId] = useState('');
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('recepcion');
-  const [hospitalWebhooks, setHospitalWebhooks] = useState([]);
-  const [seguroWebhooks, setSeguroWebhooks] = useState([]);
+  const [triageResult, setTriageResult] = useState(null);
 
   // URL del Webhook de Producción de n8n
   const N8N_WEBHOOK_URL = "https://edmolina.app.n8n.cloud/webhook/ingreso-emergencia-final";
@@ -29,7 +28,8 @@ function App() {
     const timestamp = new Date().toISOString();
     
     try {
-      await fetch(N8N_WEBHOOK_URL, {
+      // 1. Hacemos la petición real al Webhook de n8n
+      const response = await fetch(N8N_WEBHOOK_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -39,58 +39,26 @@ function App() {
         })
       });
 
-      setTimeout(() => {
-        simulateWebhookArrival(Number(patientId), timestamp);
-        setLoading(false);
-        setPatientId('');
-        setActiveTab('hospital');
-      }, 2500);
+      // 2. Esperamos la respuesta de n8n (que ahora tendrá la decisión de Gemini)
+      const data = await response.json();
+      
+      // 3. Procesamos la respuesta real que nos dio n8n
+      const newResult = {
+        time: new Date().toLocaleTimeString(),
+        destinatario: data.destinatario || "urgencias@hospital.com",
+        asunto: data.asunto || `Resolución de Ingreso: Paciente ${patientId}`,
+        estado: data.estado_autorizacion || (data.valido ? "🟢 APROBADO" : "🔴 RECHAZADO"),
+        reporte_ia: data.reporte_medico_ia || data.motivo_del_rechazo_ia || "Evaluación completada."
+      };
+
+      setTriageResult(newResult);
+      setLoading(false);
+      setPatientId('');
 
     } catch (error) {
       console.error("Error al enviar a n8n:", error);
       setLoading(false);
-      alert("Error de conexión con n8n.");
-    }
-  };
-
-  const simulateWebhookArrival = (id, time) => {
-    let status = "🟢 INGRESO AUTORIZADO";
-    let name = "Paciente Desconocido";
-    let alert = "";
-    
-    if (id === 114) {
-      name = "Lucía Suárez";
-      alert = "Validación médica exitosa. Sin riesgos previos reportados en el expediente.";
-    } else if (id === 108) {
-      status = "🔴 INGRESO DENEGADO";
-      name = "Sofía Gomez";
-      alert = "ALERTA ADMINISTRATIVA: Póliza inactiva. Paciente presenta artritis reumatoide. Requiere revisión manual.";
-    } else if (id === 123) {
-      name = "Hackathon Tester";
-      alert = "⚠️ ALERTA MÉDICA CRÍTICA: Póliza válida, pero paciente reporta ALERGIA GRAVE A ANESTESIA GENERAL y taquicardia ventricular. Etiquetar para protocolo de alto riesgo en quirófano.";
-    } else {
-      name = `Paciente #${id}`;
-      alert = "Análisis IA completado. Parámetros estándar dentro de cobertura.";
-    }
-
-    const newHospitalAlert = {
-      id: Math.random().toString(),
-      time: new Date().toLocaleTimeString(),
-      destinatario: status.includes("DENEGADO") ? "recepcion@hospital.com" : "urgencias@hospital.com",
-      asunto: `Resolución de Ingreso: ${name}`,
-      estado: status,
-      reporte_ia: alert
-    };
-
-    setHospitalWebhooks(prev => [newHospitalAlert, ...prev]);
-
-    if (!status.includes("DENEGADO") || id === 123) {
-      const newSeguroAlert = {
-        ...newHospitalAlert,
-        destinatario: "gestor.casos@seguro.com",
-        asunto: `Aviso Crítico de Siniestro: ${name}`
-      };
-      setSeguroWebhooks(prev => [newSeguroAlert, ...prev]);
+      alert("Error de conexión con n8n. Asegúrate de que el webhook devuelva un JSON.");
     }
   };
 
@@ -118,12 +86,6 @@ function App() {
           <div className="tabs-container">
             <button className={`tab-btn ${activeTab === 'recepcion' ? 'active-tab-blue' : ''}`} onClick={() => setActiveTab('recepcion')}>
               <Stethoscope size={18} className="tab-icon"/> Triage
-            </button>
-            <button className={`tab-btn ${activeTab === 'hospital' ? 'active-tab-green' : ''}`} onClick={() => setActiveTab('hospital')}>
-              <Activity size={18} className="tab-icon"/> Urgencias
-            </button>
-            <button className={`tab-btn ${activeTab === 'seguro' ? 'active-tab-red' : ''}`} onClick={() => setActiveTab('seguro')}>
-              <ShieldAlert size={18} className="tab-icon"/> Aseguradora
             </button>
             <button className={`tab-btn ${activeTab === 'pacientes' ? 'active-tab-purple' : ''}`} onClick={() => setActiveTab('pacientes')}>
               <Microscope size={18} className="tab-icon"/> Expedientes
@@ -168,66 +130,20 @@ function App() {
                 <span className="stat-pill stat-red"><XCircle size={14}/> ID: 108 Inactivo</span>
                 <span className="stat-pill stat-yellow"><ShieldAlert size={14}/> ID: 123 Alergia</span>
               </div>
-            </div>
-          )}
 
-          {/* TAB: HOSPITAL WEBHOOKS */}
-          {activeTab === 'hospital' && (
-            <div className="glass-panel main-view animate-fade-in">
-              <div className="view-header">
-                <Activity color="#10b981" size={28}/> 
-                <h2 style={{ color: '#10b981' }}>Monitor Central de Urgencias</h2>
-              </div>
-              
-              <div className="cards-container">
-                {hospitalWebhooks.length === 0 ? (
-                  <div className="empty-state">Sistema a la espera de nuevos ingresos...</div>
-                ) : (
-                  hospitalWebhooks.map(hook => (
-                    <div key={hook.id} className={`alert-card ${hook.estado.includes('DENEGADO') ? 'border-red' : 'border-green'}`}>
-                      <div className="card-top">
-                        <span className="time-badge"><Clock size={12}/> {hook.time}</span>
-                        <span className={`status-text ${hook.estado.includes('DENEGADO') ? 'text-red' : 'text-green'}`}>{hook.estado}</span>
-                      </div>
-                      <h3>{hook.asunto}</h3>
-                      <div className="ia-report">
-                        <div className="ia-badge">🤖 Diagnóstico IA</div>
-                        <p>{hook.reporte_ia}</p>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* TAB: SEGURO WEBHOOKS */}
-          {activeTab === 'seguro' && (
-            <div className="glass-panel main-view animate-fade-in">
-              <div className="view-header">
-                <ShieldAlert color="#ef4444" size={28}/> 
-                <h2 style={{ color: '#ef4444' }}>Terminal de Aseguradora</h2>
-              </div>
-              
-              <div className="cards-container">
-                {seguroWebhooks.length === 0 ? (
-                  <div className="empty-state">No hay incidentes críticos reportados.</div>
-                ) : (
-                  seguroWebhooks.map(hook => (
-                    <div key={hook.id} className="alert-card border-yellow">
-                      <div className="card-top">
-                        <span className="time-badge"><Clock size={12}/> {hook.time}</span>
-                        <span className="status-text text-yellow">ALERTA A GESTOR</span>
-                      </div>
-                      <h3>{hook.asunto}</h3>
-                      <div className="ia-report">
-                        <div className="ia-badge bg-yellow">⚠️ Riesgo Potencial</div>
-                        <p>{hook.reporte_ia}</p>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
+              {triageResult && (
+                <div className={`alert-card mt-6 animate-fade-in ${triageResult.estado.includes('RECHAZADO') ? 'border-red' : 'border-green'}`}>
+                  <div className="card-top">
+                    <span className="time-badge"><Clock size={12}/> {triageResult.time}</span>
+                    <span className={`status-text ${triageResult.estado.includes('RECHAZADO') ? 'text-red' : 'text-green'}`}>{triageResult.estado}</span>
+                  </div>
+                  <h3>{triageResult.asunto}</h3>
+                  <div className="ia-report">
+                    <div className="ia-badge">🤖 Diagnóstico IA</div>
+                    <p>{triageResult.reporte_ia}</p>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

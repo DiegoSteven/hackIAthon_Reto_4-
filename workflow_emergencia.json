@@ -7,12 +7,12 @@
         "path": "ingreso-emergencia-final",
         "options": {}
       },
-      "id": "8c99285b-8bff-4460-bd09-893bdf1394d7",
+      "id": "3643a557-c778-47dd-abbc-c5ac38dbdcc6",
       "name": "Webhook (Ingreso Hospital)",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1,
       "position": [
-        -9936,
+        -12400,
         864
       ],
       "webhookId": "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d"
@@ -43,12 +43,12 @@
         },
         "options": {}
       },
-      "id": "3a954cb2-2280-48f7-9b1d-1767a489ef1e",
+      "id": "2faef96b-5348-405f-9f5b-86ca6b1f185a",
       "name": "Consultar Paciente en Notion",
       "type": "n8n-nodes-base.notion",
       "typeVersion": 2,
       "position": [
-        -9728,
+        -12192,
         864
       ],
       "credentials": {
@@ -67,7 +67,7 @@
           "parameters": [
             {
               "name": "key",
-              "value": "PON_TU_NUEVA_API_KEY_AQUI"
+              "value": "AIzaSyDNtTj0KzCY2xsNWMlG7bYRFOYfUW_n06I"
             }
           ]
         },
@@ -76,12 +76,12 @@
         "jsonBody": "={\n  \"contents\": [\n    {\n      \"parts\": [\n        {\n          \"text\": \"Eres un agente experto en seguros de salud y triage médico. Analiza los siguientes datos del paciente:\\n\\nEstado de la póliza: {{ $json.property_estado_de_poliza }}\\nHistorial de pre-existencias: {{ $json.property_pre_existencias }}\\n\\nTu tarea:\\n1. Analiza instantáneamente la validez de la póliza.\\n2. Evalúa las pre-existencias para identificar riesgos al ingreso.\\n3. Responde ESTRICTAMENTE con un JSON válido que contenga:\\n- \\\"valido\\\": true o false (dependiendo de si la póliza está activa o no).\\n- \\\"resumen_alerta\\\": Un breve párrafo detallando la validación y resaltando cualquier riesgo importante.\\n\\nJSON Output:\"\n        }\n      ]\n    }\n  ],\n  \"generationConfig\": {\n    \"response_mime_type\": \"application/json\"\n  }\n}",
         "options": {}
       },
-      "id": "c1b78d0d-76d4-4590-9e39-1c3b7372c6e1",
+      "id": "caffeaf2-f05f-49e2-a69e-a77c9c0b364f",
       "name": "Agente IA (Gemini)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        -9536,
+        -12000,
         864
       ]
     },
@@ -98,12 +98,12 @@
         },
         "options": {}
       },
-      "id": "2ec6b48f-8ccd-4030-9af4-e75253bda464",
+      "id": "d9a1e389-0594-43bf-9a78-ad58ed638fd7",
       "name": "Extraer Decisión IA",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.2,
       "position": [
-        -9328,
+        -11792,
         864
       ]
     },
@@ -118,12 +118,12 @@
           ]
         }
       },
-      "id": "f27e22d8-ee67-4d0b-84c3-bd937ab1c492",
+      "id": "d55226a5-cd0b-43a5-90bb-52f2832b7d5d",
       "name": "Verificar Decisión IA",
       "type": "n8n-nodes-base.if",
       "typeVersion": 1,
       "position": [
-        -9136,
+        -11600,
         864
       ]
     },
@@ -136,12 +136,12 @@
         "jsonBody": "={\n  \"destinatario\": \"admisiones@hospital.com\",\n  \"asunto\": \"Alerta de Ingreso: {{ $json.property_nombre }}\",\n  \"datos_del_paciente\": {\n    \"nombre\": \"{{ $json.property_nombre }}\",\n    \"identificacion\": \"{{ $json.identificación_de_la_propiedad }}\"\n  },\n  \"estado_autorizacion\": \"🟢 APROBADO\",\n  \"reporte_medico_ia\": \"{{ $json.respuesta_ia.resumen_alerta }}\"\n}",
         "options": {}
       },
-      "id": "ec33e989-0dc8-4a26-b8e0-90860803ff28",
+      "id": "4a9d4a9e-ecd0-491f-b6c6-81924cdf100a",
       "name": "Notificar Admisiones (Webhook)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        -8832,
+        -11296,
         704
       ]
     },
@@ -154,12 +154,12 @@
         "jsonBody": "={\n  \"destinatario\": \"gestor.casos@seguro.com\",\n  \"asunto\": \"Aviso Crítico a Gestor: {{ $json.property_nombre }}\",\n  \"datos_del_paciente\": {\n    \"nombre\": \"{{ $json.property_nombre }}\",\n    \"identificacion\": \"{{ $json.identificación_de_la_propiedad }}\"\n  },\n  \"estado_autorizacion\": \"🟢 APROBADO\",\n  \"reporte_medico_ia\": \"{{ $json.respuesta_ia.resumen_alerta }}\"\n}",
         "options": {}
       },
-      "id": "2608bc9f-bcc0-478b-a711-88ca429e999f",
+      "id": "f94aa8c2-466b-4544-aa23-3bb1852aa721",
       "name": "Notificar Gestor de Casos (Webhook)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        -8832,
+        -11296,
         912
       ]
     },
@@ -172,12 +172,12 @@
         "jsonBody": "={\n  \"destinatario\": \"recepcion@hospital.com\",\n  \"asunto\": \"Ingreso Denegado: {{ $json.property_nombre }}\",\n  \"datos_del_paciente\": {\n    \"nombre\": \"{{ $json.property_nombre }}\",\n    \"identificacion\": \"{{ $json.identificación_de_la_propiedad }}\"\n  },\n  \"estado_autorizacion\": \"🔴 RECHAZADO\",\n  \"motivo_del_rechazo_ia\": \"{{ $json.respuesta_ia.resumen_alerta }}\"\n}",
         "options": {}
       },
-      "id": "0a1b998e-cad5-4d05-95bc-56dd54c93761",
+      "id": "0764debf-ea6c-4033-a74e-0f45176c589b",
       "name": "Notificar Rechazo (Webhook)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        -8832,
+        -11296,
         1104
       ]
     }
@@ -252,12 +252,12 @@
       ]
     }
   },
-  "active": true,
+  "active": false,
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "dd1b6b51-72d4-49d5-b0bf-c0a3f94efbec",
+  "versionId": "51fa5962-94b9-4ebb-b37f-3f433d7a4033",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "3df03d952823496ccc2c2b7b1829cbda5990bf554c1c066cf68f23b1612e0bd1"
