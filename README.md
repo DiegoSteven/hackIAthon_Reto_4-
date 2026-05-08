@@ -1,5 +1,7 @@
 # 🏥 NeuroTriage OS - Sistema de Alerta Temprana de Ingresos a Emergencias
 
+![Dashboard NeuroTriage OS](./dashboard.png)
+
 ![Vercel Deploy](https://img.shields.io/badge/Deploy-Vercel-black?logo=vercel)
 ![React](https://img.shields.io/badge/Frontend-React_Vite-blue?logo=react)
 ![n8n](https://img.shields.io/badge/Automatización-n8n-FF6D5A?logo=n8n)
@@ -17,6 +19,9 @@ Este proyecto se compone de dos partes principales que trabajan en perfecta sinc
 
 1. **El Cerebro Lógico (Backend Automation):** Construido en **n8n**. Un flujo de trabajo que recibe un Webhook con el ID del paciente, consulta la base de datos médica en **Notion**, y envía los datos a **Google Gemini 2.5 Flash**. La IA evalúa la póliza y el riesgo clínico en tiempo real, devolviendo un JSON estructurado que n8n enruta a las terminales correspondientes.
 2. **El Portal Hospitalario (Frontend):** Construido en **React + Vite** con un diseño *Glassmorphism* ultra-moderno. Actúa como el punto de recepción del hospital donde se ingresa el ID, y simulador de terminales de Webhook para visualizar las decisiones de la IA al instante.
+
+### Base de Datos de Pacientes (Mock EMR)
+![Base de Datos en Notion](./db_notion.png)
 
 ### Stack Tecnológico:
 - **n8n:** Orquestación de flujos y Webhooks.
