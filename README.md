@@ -34,9 +34,14 @@ Este proyecto se compone de dos partes principales que trabajan en perfecta sinc
 
 ## 🧪 Cómo realizar las pruebas en Vercel (Producción)
 Puedes probar el sistema directamente sin instalar nada entrando a nuestro enlace público:
-👉 **https://hack-i-athon-reto-4.vercel.app/**
+👉 **[Dashboard NeuroTriage OS](https://hack-i-athon-reto-4.vercel.app/)**
 
-Para evaluar las capacidades de la IA, dirígete a la pestaña **"Triage"** e ingresa uno de los siguientes IDs de prueba (puedes ver la base completa en la pestaña *Expedientes*):
+### 📬 Monitoreo de Notificaciones en Tiempo Real (Webhook.site)
+Para comprobar que el flujo envía correctamente las notificaciones al hospital y la aseguradora de manera simultánea, puedes abrir nuestra bandeja pública de Webhook.site y ver las notificaciones llegar en vivo:
+👉 **[Ver Bandeja de Notificaciones (Webhook.site)](https://webhook.site/#!/view/7e61c3e0-a28b-4372-be23-e1e0b0619a3b)**
+
+### 🩺 Ejecución del Triage
+Para evaluar las capacidades de la IA, dirígete a la pestaña **"Triage"** en el Dashboard e ingresa uno de los siguientes IDs de prueba (puedes ver la base completa en la pestaña *Expedientes*). El resultado se mostrará **inmediatamente en pantalla** gracias a la conexión directa con Gemini a través de n8n:
 
 *   🟢 **ID `114` (Caso Ideal):** El paciente tiene póliza activa y sin pre-existencias. El sistema aprobará el ingreso y notificará a urgencias.
 *   🔴 **ID `108` (Rechazo Automático):** La póliza está inactiva y tiene historial de artritis. La IA detectará el fraude/falta de cobertura y denegará el ingreso.
