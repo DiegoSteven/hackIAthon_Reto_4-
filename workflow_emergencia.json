@@ -1,0 +1,267 @@
+{
+  "name": "Alerta Temprana de Ingresos a Emergencias con IA",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ingreso-emergencia",
+        "options": {}
+      },
+      "id": "8c99285b-8bff-4460-bd09-893bdf1394d7",
+      "name": "Webhook (Ingreso Hospital)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -9936,
+        864
+      ],
+      "webhookId": "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": {
+          "__rl": true,
+          "value": "35a71c4d-de17-8013-ac4e-f8096c184f11",
+          "mode": "list",
+          "cachedResultName": "pacientes_notion",
+          "cachedResultUrl": "https://www.notion.so/35a71c4dde178013ac4ef8096c184f11"
+        },
+        "returnAll": true,
+        "filterType": "manual",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "key": "Identificacion|number",
+              "condition": "equals",
+              "numberValue": "={{ $json.body.paciente_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "3a954cb2-2280-48f7-9b1d-1767a489ef1e",
+      "name": "Consultar Paciente en Notion",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2,
+      "position": [
+        -9728,
+        864
+      ],
+      "credentials": {
+        "notionOAuth2Api": {
+          "id": "KkXLh3pKUBz1kHRX",
+          "name": "Notion OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "key",
+              "value": "PON_TU_API_KEY_AQUI"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"contents\": [\n    {\n      \"parts\": [\n        {\n          \"text\": \"Eres un agente experto en seguros de salud y triage médico. Analiza los siguientes datos del paciente:\\n\\nEstado de la póliza: {{ $json.property_estado_de_poliza }}\\nHistorial de pre-existencias: {{ $json.property_pre_existencias }}\\n\\nTu tarea:\\n1. Analiza instantáneamente la validez de la póliza.\\n2. Evalúa las pre-existencias para identificar riesgos al ingreso.\\n3. Responde ESTRICTAMENTE con un JSON válido que contenga:\\n- \\\"valido\\\": true o false (dependiendo de si la póliza está activa o no).\\n- \\\"resumen_alerta\\\": Un breve párrafo detallando la validación y resaltando cualquier riesgo importante.\\n\\nJSON Output:\"\n        }\n      ]\n    }\n  ],\n  \"generationConfig\": {\n    \"response_mime_type\": \"application/json\"\n  }\n}",
+        "options": {}
+      },
+      "id": "c1b78d0d-76d4-4590-9e39-1c3b7372c6e1",
+      "name": "Agente IA (Gemini)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -9536,
+        864
+      ]
+    },
+    {
+      "parameters": {
+        "fields": {
+          "values": [
+            {
+              "name": "respuesta_ia",
+              "type": "objectValue",
+              "objectValue": "={{ JSON.parse($json.candidates[0].content.parts[0].text.replace(/```json/gi, '').replace(/```/gi, '')) }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "2ec6b48f-8ccd-4030-9af4-e75253bda464",
+      "name": "Extraer Decisión IA",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.2,
+      "position": [
+        -9328,
+        864
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.respuesta_ia.valido }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "f27e22d8-ee67-4d0b-84c3-bd937ab1c492",
+      "name": "Verificar Decisión IA",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -9136,
+        864
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://webhook.site/7e61c3e0-a28b-4372-be23-e1e0b0619a3b",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"destinatario\": \"admisiones@hospital.com\",\n  \"asunto\": \"Alerta de Ingreso: {{ $json.property_nombre }}\",\n  \"datos_del_paciente\": {\n    \"nombre\": \"{{ $json.property_nombre }}\",\n    \"identificacion\": \"{{ $json.identificación_de_la_propiedad }}\"\n  },\n  \"estado_autorizacion\": \"🟢 APROBADO\",\n  \"reporte_medico_ia\": \"{{ $json.respuesta_ia.resumen_alerta }}\"\n}",
+        "options": {}
+      },
+      "id": "ec33e989-0dc8-4a26-b8e0-90860803ff28",
+      "name": "Notificar Admisiones (Webhook)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -8832,
+        704
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://webhook.site/7e61c3e0-a28b-4372-be23-e1e0b0619a3b",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"destinatario\": \"gestor.casos@seguro.com\",\n  \"asunto\": \"Aviso Crítico a Gestor: {{ $json.property_nombre }}\",\n  \"datos_del_paciente\": {\n    \"nombre\": \"{{ $json.property_nombre }}\",\n    \"identificacion\": \"{{ $json.identificación_de_la_propiedad }}\"\n  },\n  \"estado_autorizacion\": \"🟢 APROBADO\",\n  \"reporte_medico_ia\": \"{{ $json.respuesta_ia.resumen_alerta }}\"\n}",
+        "options": {}
+      },
+      "id": "2608bc9f-bcc0-478b-a711-88ca429e999f",
+      "name": "Notificar Gestor de Casos (Webhook)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -8832,
+        912
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://webhook.site/7e61c3e0-a28b-4372-be23-e1e0b0619a3b",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"destinatario\": \"recepcion@hospital.com\",\n  \"asunto\": \"Ingreso Denegado: {{ $json.property_nombre }}\",\n  \"datos_del_paciente\": {\n    \"nombre\": \"{{ $json.property_nombre }}\",\n    \"identificacion\": \"{{ $json.identificación_de_la_propiedad }}\"\n  },\n  \"estado_autorizacion\": \"🔴 RECHAZADO\",\n  \"motivo_del_rechazo_ia\": \"{{ $json.respuesta_ia.resumen_alerta }}\"\n}",
+        "options": {}
+      },
+      "id": "0a1b998e-cad5-4d05-95bc-56dd54c93761",
+      "name": "Notificar Rechazo (Webhook)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -8832,
+        1104
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook (Ingreso Hospital)": {
+      "main": [
+        [
+          {
+            "node": "Consultar Paciente en Notion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consultar Paciente en Notion": {
+      "main": [
+        [
+          {
+            "node": "Agente IA (Gemini)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agente IA (Gemini)": {
+      "main": [
+        [
+          {
+            "node": "Extraer Decisión IA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer Decisión IA": {
+      "main": [
+        [
+          {
+            "node": "Verificar Decisión IA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verificar Decisión IA": {
+      "main": [
+        [
+          {
+            "node": "Notificar Admisiones (Webhook)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Notificar Gestor de Casos (Webhook)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notificar Rechazo (Webhook)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "0df82a51-c3d1-4fac-bd6f-1fe94febdcec",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3df03d952823496ccc2c2b7b1829cbda5990bf554c1c066cf68f23b1612e0bd1"
+  },
+  "id": "gF6eOYDY1t8oBODt",
+  "tags": []
+}

@@ -1,0 +1,12 @@
+# Datos y secretos
+pacientes_notion.csv
+
+# Carpetas del entorno de IA
+skills.antigravity/
+.gemini/
+
+# Archivos temporales o de sistema
+.DS_Store
+Thumbs.db
+node_modules/
+.env
