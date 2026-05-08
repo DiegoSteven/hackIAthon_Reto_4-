@@ -15,7 +15,6 @@ function App() {
   const [patientId, setPatientId] = useState('');
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('recepcion');
-  const [triageResult, setTriageResult] = useState(null);
 
   // URL del Webhook de Producción de n8n
   const N8N_WEBHOOK_URL = "https://edmolina.app.n8n.cloud/webhook/ingreso-emergencia-final";
@@ -39,19 +38,8 @@ function App() {
         })
       });
 
-      // 2. Esperamos la respuesta de n8n (que ahora tendrá la decisión de Gemini)
-      const data = await response.json();
-      
-      // 3. Procesamos la respuesta real que nos dio n8n
-      const newResult = {
-        time: new Date().toLocaleTimeString(),
-        destinatario: data.destinatario || "urgencias@hospital.com",
-        asunto: data.asunto || `Resolución de Ingreso: Paciente ${patientId}`,
-        estado: data.estado_autorizacion || (data.valido ? "🟢 APROBADO" : "🔴 RECHAZADO"),
-        reporte_ia: data.reporte_medico_ia || data.motivo_del_rechazo_ia || "Evaluación completada."
-      };
-
-      setTriageResult(newResult);
+      // Como n8n está enviando la respuesta a webhook.site, 
+      // no recibimos el JSON aquí. Solo reiniciamos la vista.
       setLoading(false);
       setPatientId('');
 
@@ -130,20 +118,6 @@ function App() {
                 <span className="stat-pill stat-red"><XCircle size={14}/> ID: 108 Inactivo</span>
                 <span className="stat-pill stat-yellow"><ShieldAlert size={14}/> ID: 123 Alergia</span>
               </div>
-
-              {triageResult && (
-                <div className={`alert-card mt-6 animate-fade-in ${triageResult.estado.includes('RECHAZADO') ? 'border-red' : 'border-green'}`}>
-                  <div className="card-top">
-                    <span className="time-badge"><Clock size={12}/> {triageResult.time}</span>
-                    <span className={`status-text ${triageResult.estado.includes('RECHAZADO') ? 'text-red' : 'text-green'}`}>{triageResult.estado}</span>
-                  </div>
-                  <h3>{triageResult.asunto}</h3>
-                  <div className="ia-report">
-                    <div className="ia-badge">🤖 Diagnóstico IA</div>
-                    <p>{triageResult.reporte_ia}</p>
-                  </div>
-                </div>
-              )}
             </div>
           )}
 
