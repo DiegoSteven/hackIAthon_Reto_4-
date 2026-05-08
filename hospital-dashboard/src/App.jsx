@@ -15,6 +15,7 @@ function App() {
   const [patientId, setPatientId] = useState('');
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('recepcion');
+  const [successMessage, setSuccessMessage] = useState('');
 
   // URL del Webhook de Producción de n8n
   const N8N_WEBHOOK_URL = "https://edmolina.app.n8n.cloud/webhook/ingreso-emergencia-final";
@@ -39,9 +40,15 @@ function App() {
       });
 
       // Como n8n está enviando la respuesta a webhook.site, 
-      // no recibimos el JSON aquí. Solo reiniciamos la vista.
+      // mostramos un mensaje de éxito en pantalla.
       setLoading(false);
       setPatientId('');
+      setSuccessMessage('📡 Datos enviados. Revisa la bandeja de Webhook.site para ver el resultado de la IA.');
+      
+      // Ocultar mensaje después de 5 segundos
+      setTimeout(() => {
+        setSuccessMessage('');
+      }, 5000);
 
     } catch (error) {
       console.error("Error al enviar a n8n:", error);
@@ -118,6 +125,13 @@ function App() {
                 <span className="stat-pill stat-red"><XCircle size={14}/> ID: 108 Inactivo</span>
                 <span className="stat-pill stat-yellow"><ShieldAlert size={14}/> ID: 123 Alergia</span>
               </div>
+
+              {successMessage && (
+                <div className="alert-card border-green animate-fade-in" style={{ marginTop: '2rem', textAlign: 'center', padding: '1.5rem' }}>
+                  <CheckCircle size={32} color="#10b981" style={{ margin: '0 auto 0.5rem' }} />
+                  <p style={{ color: '#10b981', fontWeight: 'bold', fontSize: '1.1rem' }}>{successMessage}</p>
+                </div>
+              )}
             </div>
           )}
 
