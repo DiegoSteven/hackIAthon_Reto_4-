@@ -156,14 +156,14 @@ function App() {
                   <tbody>
                     {patientsData.map(p => (
                       <tr key={p.id}>
-                        <td className="font-mono text-cyan">{p.id}</td>
-                        <td className="font-bold">{p.name}</td>
-                        <td>
+                        <td data-label="ID Médico" className="font-mono text-cyan">{p.id}</td>
+                        <td data-label="Paciente" className="font-bold">{p.name}</td>
+                        <td data-label="Cobertura">
                           <span className={`pill ${p.status === 'Activa' ? 'pill-green' : 'pill-red'}`}>
                             {p.status}
                           </span>
                         </td>
-                        <td className="history-cell">{p.history}</td>
+                        <td data-label="Historial Clínico" className="history-cell">{p.history}</td>
                       </tr>
                     ))}
                   </tbody>
