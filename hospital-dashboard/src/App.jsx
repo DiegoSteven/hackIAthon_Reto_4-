@@ -6,23 +6,23 @@ function App() {
   const [patientId, setPatientId] = useState('');
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('recepcion'); // recepcion, hospital, seguro
-  
+
   // Simulated Webhook Stores
   const [hospitalWebhooks, setHospitalWebhooks] = useState([]);
   const [seguroWebhooks, setSeguroWebhooks] = useState([]);
 
-  // URL del Webhook de n8n
-  const N8N_WEBHOOK_URL = "https://edmolina.app.n8n.cloud/webhook-test/ingreso-emergencia";
+  // URL del Webhook de Producción de n8n
+  const N8N_WEBHOOK_URL = "https://edmolina.app.n8n.cloud/webhook/ingreso-emergencia-final";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!patientId) return;
 
     setLoading(true);
-    
+
     // Simulate creating a local record first
     const timestamp = new Date().toISOString();
-    
+
     try {
       // We send the request to n8n
       const response = await fetch(N8N_WEBHOOK_URL, {
@@ -59,7 +59,7 @@ function App() {
     let status = "🟢 APROBADO";
     let name = "Paciente Desconocido";
     let alert = "";
-    
+
     if (id === 114) {
       name = "Lucía Suárez";
       alert = "La póliza se encuentra activa y es válida. No se reportan preexistencias.";
@@ -100,39 +100,39 @@ function App() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', padding: '2rem', gap: '2rem' }}>
-      
+
       {/* Header */}
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <h1 style={{ fontSize: '2rem', fontWeight: '700', letterSpacing: '-0.5px' }}>
-            <Activity color="#3b82f6" style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '10px' }}/>
+            <Activity color="#3b82f6" style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '10px' }} />
             Triage IA Central
           </h1>
           <p style={{ color: 'var(--text-secondary)', marginTop: '4px' }}>Sistema de Alerta Temprana - Hackathon Reto 4</p>
         </div>
-        
+
         <div style={{ display: 'flex', gap: '10px', background: 'var(--bg-card)', padding: '6px', borderRadius: '12px', border: '1px solid var(--glass-border)' }}>
-          <button 
+          <button
             onClick={() => setActiveTab('recepcion')}
             style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', background: activeTab === 'recepcion' ? '#3b82f6' : 'transparent', color: 'white', cursor: 'pointer', fontWeight: '500', transition: 'all 0.2s' }}>
-            <UserPlus size={18} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '6px' }}/> Recepción
+            <UserPlus size={18} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '6px' }} /> Recepción
           </button>
-          <button 
+          <button
             onClick={() => setActiveTab('hospital')}
             style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', background: activeTab === 'hospital' ? '#10b981' : 'transparent', color: 'white', cursor: 'pointer', fontWeight: '500', transition: 'all 0.2s' }}>
-            <Building2 size={18} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '6px' }}/> Hospital Webhooks
+            <Building2 size={18} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '6px' }} /> Hospital Webhooks
           </button>
-          <button 
+          <button
             onClick={() => setActiveTab('seguro')}
             style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', background: activeTab === 'seguro' ? '#ef4444' : 'transparent', color: 'white', cursor: 'pointer', fontWeight: '500', transition: 'all 0.2s' }}>
-            <ShieldAlert size={18} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '6px' }}/> Seguro Webhooks
+            <ShieldAlert size={18} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '6px' }} /> Seguro Webhooks
           </button>
         </div>
       </header>
 
       {/* Main Content */}
       <main style={{ flex: 1, display: 'flex', gap: '2rem', overflow: 'hidden' }}>
-        
+
         {/* TAB: RECEPCIÓN */}
         {activeTab === 'recepcion' && (
           <div className="glass-panel animate-fade-in" style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '3rem' }}>
@@ -143,18 +143,18 @@ function App() {
             <p style={{ color: 'var(--text-secondary)', textAlign: 'center', maxWidth: '400px', marginBottom: '2.5rem' }}>
               Ingrese el ID del paciente. El sistema consultará a Notion y Gemini evaluará el caso en tiempo real.
             </p>
-            
+
             <form onSubmit={handleSubmit} style={{ width: '100%', maxWidth: '400px', display: 'flex', gap: '1rem' }}>
-              <input 
-                type="number" 
+              <input
+                type="number"
                 value={patientId}
                 onChange={e => setPatientId(e.target.value)}
                 placeholder="ID (ej. 114, 108, 123)"
                 disabled={loading}
                 style={{ flex: 1, padding: '16px 20px', borderRadius: '12px', border: '1px solid var(--glass-border)', background: 'rgba(15, 23, 42, 0.5)', color: 'white', fontSize: '1.1rem', outline: 'none' }}
               />
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 disabled={loading}
                 style={{ padding: '16px 32px', borderRadius: '12px', border: 'none', background: loading ? '#475569' : '#3b82f6', color: 'white', fontSize: '1.1rem', fontWeight: '600', cursor: loading ? 'not-allowed' : 'pointer', transition: 'background 0.2s' }}>
                 {loading ? 'Procesando...' : 'Analizar'}
@@ -162,9 +162,9 @@ function App() {
             </form>
 
             <div style={{ marginTop: '3rem', display: 'flex', gap: '2rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><CheckCircle size={16} color="#10b981"/> 114 (Aprobado)</span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><XCircle size={16} color="#ef4444"/> 108 (Rechazado)</span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><ShieldAlert size={16} color="#f59e0b"/> 123 (Caso Crítico)</span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><CheckCircle size={16} color="#10b981" /> 114 (Aprobado)</span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><XCircle size={16} color="#ef4444" /> 108 (Rechazado)</span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><ShieldAlert size={16} color="#f59e0b" /> 123 (Caso Crítico)</span>
             </div>
           </div>
         )}
@@ -175,7 +175,7 @@ function App() {
             <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
               <Building2 color="#10b981" /> Terminal de Admisiones (Hospital)
             </h2>
-            
+
             <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               {hospitalWebhooks.length === 0 ? (
                 <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', color: 'var(--text-secondary)' }}>
@@ -186,7 +186,7 @@ function App() {
                   <div key={hook.id} style={{ background: 'rgba(15, 23, 42, 0.4)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '1.5rem', borderLeft: `4px solid ${hook.estado.includes('APROBADO') ? '#10b981' : '#ef4444'}` }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
                       <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-                        <Clock size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '4px' }}/> {hook.time}
+                        <Clock size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '4px' }} /> {hook.time}
                       </span>
                       <span style={{ fontWeight: '600', color: hook.estado.includes('APROBADO') ? '#10b981' : '#ef4444' }}>{hook.estado}</span>
                     </div>
@@ -207,7 +207,7 @@ function App() {
             <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
               <ShieldAlert color="#ef4444" /> Panel de Gestor de Casos (Seguro)
             </h2>
-            
+
             <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               {seguroWebhooks.length === 0 ? (
                 <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', color: 'var(--text-secondary)' }}>
@@ -218,7 +218,7 @@ function App() {
                   <div key={hook.id} style={{ background: 'rgba(15, 23, 42, 0.4)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '1.5rem', borderLeft: '4px solid #f59e0b' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
                       <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-                        <Clock size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '4px' }}/> {hook.time}
+                        <Clock size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '4px' }} /> {hook.time}
                       </span>
                       <span style={{ fontWeight: '600', color: '#f59e0b' }}>ALERTA A GESTOR</span>
                     </div>
@@ -232,7 +232,7 @@ function App() {
             </div>
           </div>
         )}
-        
+
       </main>
     </div>
   );
